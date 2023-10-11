@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: 'WebFrame/Core'
-          ref: '${{ TRIGGERING_CORE_BRANCH }}'
+          ref: '' # '${{ TRIGGERING_CORE_BRANCH }}'
           token: '${{ github.token }}' 
           submodules: 'recursive'
           path: Core
@@ -51,7 +51,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: 'WebFrame/ORM-Abstract'
-          ref: '${{ TRIGGERING_ORM_BRANCH }}'
+          ref: '' # '${{ TRIGGERING_ORM_BRANCH }}'
           token: '${{ github.token }}' 
           submodules: 'recursive'
           path: ORM-Abstract
