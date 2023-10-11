@@ -1,0 +1,74 @@
+name: Code quality report deploy
+on:
+  push:
+    branches: [ master, test-pipelines ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  get-core-data:
+    if: github.event.commits[0].author.name != 'github-actions[bot]'
+    name: Get JSON benchmark test results
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - uses: actions/checkout@v4
+        with:
+          repository: 'WebFrame/Core'
+          ref: '${{ TRIGGERING_CORE_BRANCH }}'
+          token: '${{ github.token }}' 
+          submodules: 'recursive'
+          path: Core
+      - name: Check if Core is retieved
+        shell: bash
+        run: |
+          ls
+          ls Core/
+      - name: Commit files
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add v2/
+          git commit -m "Add collected data from Core" -a
+      - name: Push the data
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+
+  get-orm-data:
+    if: github.event.commits[0].author.name != 'github-actions[bot]'
+    needs: [get-core-data]
+    name: Get JSON ORM test results
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - uses: actions/checkout@v4
+        with:
+          repository: 'WebFrame/ORM-Abstract'
+          ref: '${{ TRIGGERING_ORM_BRANCH }}'
+          token: '${{ github.token }}' 
+          submodules: 'recursive'
+          path: ORM-Abstract
+      - name: Check if ORM is retieved
+        shell: bash
+        run: |
+          ls
+          ls ORM-Abstract/
+
+      - name: Commit files
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add v2/
+          git commit -m "Add collected data from ORM" -a
+      - name: Push the data
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
