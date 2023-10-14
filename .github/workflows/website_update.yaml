@@ -9,6 +9,11 @@ on:
         required: true
         default: 'main'
         type: string
+      orm_branch:
+        description: 'Branch ref'
+        required: true
+        default: 'main'
+        type: string
       GITHUB_TOKEN:
         description: 'GITHUB_TOKEN'
         required: true
@@ -19,15 +24,18 @@ jobs:
     name: Get JSON benchmark test results
     runs-on: ubuntu-latest
     steps:
+      - uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.CORE_PRIVATE_KEY }}
       - uses: actions/checkout@v4
         with:
+          ssh-key: ${{ secrets.CORE_PRIVATE_KEY }}
           submodules: 'recursive'
           ref: main
       - uses: actions/checkout@v4
         with:
           repository: 'WebFrame/Core'
           ref: ${{ inputs.branch }}
-          token: '${{ github.token }}' 
           submodules: 'recursive'
           path: Core
       - name: Check if Core is retieved
@@ -39,12 +47,12 @@ jobs:
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add v2/
+          git add .
           git commit -m "Add collected data from Core" -a
       - name: Push the data
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ inputs.GITHUB_TOKEN }}
+          ssh: true
           branch: main
 
   get-orm-data:
@@ -53,13 +61,18 @@ jobs:
     name: Get JSON ORM test results
     runs-on: ubuntu-latest
     steps:
+      - uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.CORE_PRIVATE_KEY }}
       - uses: actions/checkout@v4
         with:
+          ssh-key: ${{ secrets.CORE_PRIVATE_KEY }}
           submodules: 'recursive'
+          ref: main
       - uses: actions/checkout@v4
         with:
           repository: 'WebFrame/ORM-Abstract'
-          ref: '' # '${{ TRIGGERING_ORM_BRANCH }}'
+          ref: ${{ inputs.orm_branch }}'
           token: '${{ github.token }}' 
           submodules: 'recursive'
           path: ORM-Abstract
@@ -73,10 +86,10 @@ jobs:
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add v2/
+          git add .
           git commit -m "Add collected data from ORM" -a
       - name: Push the data
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ inputs.GITHUB_TOKEN }}
+          ssh: true
           branch: ${{ github.ref }}
