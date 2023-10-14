@@ -29,12 +29,13 @@ jobs:
           ssh-private-key: ${{ secrets.CORE_PRIVATE_KEY }}
       - uses: actions/checkout@v4
         with:
-          ssh-key: ${{ secrets.CORE_PRIVATE_KEY }}
+          repository: 'WebFrame/webframe.github.io'
           submodules: 'recursive'
-          ref: main
+          ssh-key: ${{ secrets.CORE_PRIVATE_KEY }}
       - uses: actions/checkout@v4
         with:
           repository: 'WebFrame/Core'
+          ssh-key: ${{ secrets.CORE_PRIVATE_KEY }}
           ref: ${{ inputs.branch }}
           submodules: 'recursive'
           path: Core
