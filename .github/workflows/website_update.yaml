@@ -11,7 +11,7 @@ on:
         type: string
       orm_branch:
         description: 'Branch ref'
-        required: true
+        required: false
         default: 'main'
         type: string
       GITHUB_TOKEN:
