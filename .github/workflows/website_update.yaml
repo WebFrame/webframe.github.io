@@ -2,23 +2,30 @@ name: Code quality report deploy
 on:
   push:
     branches: [ master, test-pipelines ]
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      branch:
+        description: 'Branch ref'
+        required: true
+        default: 'main'
+      secrets:
+        GITHUB_TOKEN:
+          description: 'GITHUB_TOKEN'
+          required: true
 
 jobs:
   get-core-data:
-    if: github.event.commits[0].author.name != 'github-actions[bot]'
     name: Get JSON benchmark test results
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
+          ref: main
       - uses: actions/checkout@v4
         with:
           repository: 'WebFrame/Core'
-          ref: '' # '${{ TRIGGERING_CORE_BRANCH }}'
+          ref: ${{ inputs.branch }}
           token: '${{ github.token }}' 
           submodules: 'recursive'
           path: Core
@@ -37,7 +44,7 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+          branch: main
 
   get-orm-data:
     if: github.event.commits[0].author.name != 'github-actions[bot]'
