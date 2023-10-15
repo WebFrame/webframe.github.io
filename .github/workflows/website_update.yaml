@@ -55,6 +55,7 @@ jobs:
         with:
           ssh: true
           branch: main
+          repository: 'WebFrame/webframe.github.io'
 
   get-orm-data:
     if: github.event.commits[0].author.name != 'github-actions[bot]'
