@@ -1,7 +1,5 @@
 name: Code quality report deploy
 on:
-  push:
-    branches: [ master, test-pipelines ]
   workflow_call:
     inputs:
       branch:
@@ -44,6 +42,8 @@ jobs:
         run: |
           ls
           ls Core/
+          cp Core/reports . -rf
+          rm -rf Core
       - name: Commit files
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
