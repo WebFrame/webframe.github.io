@@ -46,7 +46,6 @@ jobs:
           github_token: ${{ github.token }}
 
   get-orm-data:
-    if: false
     needs: [get-core-data]
     name: Get JSON ORM test results
     runs-on: ubuntu-latest
@@ -62,19 +61,23 @@ jobs:
           ref: gh-pages
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           submodules: 'recursive'
-          path: ORM-Abstract
+          path: New_ORM-Abstract
       - name: Check if ORM is retrieved
         shell: bash
         run: |
           ls
+          ls New_ORM-Abstract/
+          rm -rf ORM-Abstract/
+          mkdir ORM-Abstract
+          mv -f New_ORM-Abstract/* ORM-Abstract/
+          rm -rf New_ORM-Abstract
+          ls
           ls ORM-Abstract/
-          cp ORM-Abstract/example . -rf
-          rm -rf ORM-Abstract
       - name: Commit files
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add .
+          git add ORM-Abstract/
           git commit -m "Add collected data from ORM" -a
       - name: Push the data
         uses: ad-m/github-push-action@master
