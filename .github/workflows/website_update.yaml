@@ -1,5 +1,6 @@
 name: Code quality report deploy
 on:
+  workflow_dispatch:
   repository_dispatch:
     types: [doc_update]
 
@@ -21,18 +22,23 @@ jobs:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           ref: gh-pages
           submodules: 'recursive'
-          path: Core
+          path: New_Core
       - name: Check if Core is retrieved
         shell: bash
         run: |
           ls
+          ls New_Core/
+          rm -rf Core/
+          mkdir Core
+          mv New_Core/* Core/ -rf
+          rm -rf New_Core
+          ls
           ls Core/
-          rm -rf Core/.git*
       - name: Commit files
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add .
+          git add Core/
           git commit -m "Add collected data from Core" -a
       - name: Push the data
         uses: ad-m/github-push-action@master
@@ -40,6 +46,7 @@ jobs:
           github_token: ${{ github.token }}
 
   get-orm-data:
+    if: false
     needs: [get-core-data]
     name: Get JSON ORM test results
     runs-on: ubuntu-latest
