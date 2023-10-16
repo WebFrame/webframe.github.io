@@ -30,7 +30,7 @@ jobs:
           ls New_Core/
           rm -rf Core/
           mkdir Core
-          mv New_Core/* Core/ -rf
+          mv -f New_Core/* Core/
           rm -rf New_Core
           ls
           ls Core/
