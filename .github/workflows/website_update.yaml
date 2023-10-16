@@ -12,19 +12,12 @@ on:
         required: false
         default: 'main'
         type: string
-      core_GITHUB_TOKEN:
-        description: 'GITHUB_TOKEN for Core'
-        required: false
-        type: string
-      orm_GITHUB_TOKEN:
-        description: 'GITHUB_TOKEN for ORM-Abstract'
-        required: false
-        type: string
 
 permissions: write-all
 
 jobs:
   get-core-data:
+    if: github.event.commits[0].author.name != 'github-actions[bot]'
     name: Get JSON benchmark test results
     runs-on: ubuntu-latest
     steps:
@@ -32,10 +25,11 @@ jobs:
         with:
           repository: 'WebFrame/webframe.github.io'
           ref: main
+          token: ${{ github.token }}
       - uses: actions/checkout@v4
         with:
           repository: 'WebFrame/Core'
-          token: ${{ inputs.core_GITHUB_TOKEN }}
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           ref: ${{ inputs.core_branch }}
           submodules: 'recursive'
           path: Core
@@ -52,7 +46,11 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add .
           git commit -m "Add collected data from Core" -a
-          git push
+      - name: Push the data
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          branch: ${{ github.ref }}
 
   get-orm-data:
     if: github.event.commits[0].author.name != 'github-actions[bot]'
@@ -62,14 +60,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # ssh-key: ${{ secrets.CORE_PRIVATE_KEY }}
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           submodules: 'recursive'
           ref: main
       - uses: actions/checkout@v4
         with:
           repository: 'WebFrame/ORM-Abstract'
           ref: '${{ inputs.orm_branch }}'
-          token: ${{ inputs.orm_GITHUB_TOKEN }}
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           submodules: 'recursive'
           path: ORM-Abstract
       - name: Check if ORM is retrieved
@@ -85,4 +83,8 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add .
           git commit -m "Add collected data from ORM" -a
-          git push
+      - name: Push the data
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          branch: ${{ github.ref }}
