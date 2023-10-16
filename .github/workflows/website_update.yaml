@@ -2,9 +2,9 @@ name: Code quality report deploy
 on:
   workflow_call:
     inputs:
-      branch:
+      core_branch:
         description: 'Branch ref'
-        required: true
+        required: false
         default: 'main'
         type: string
       orm_branch:
@@ -12,9 +12,13 @@ on:
         required: false
         default: 'main'
         type: string
-      GITHUB_TOKEN:
-        description: 'GITHUB_TOKEN'
-        required: true
+      core_GITHUB_TOKEN:
+        description: 'GITHUB_TOKEN for Core'
+        required: false
+        type: string
+      orm_GITHUB_TOKEN:
+        description: 'GITHUB_TOKEN for ORM-Abstract'
+        required: false
         type: string
 
 permissions: write-all
@@ -24,23 +28,18 @@ jobs:
     name: Get JSON benchmark test results
     runs-on: ubuntu-latest
     steps:
-      - uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.CORE_PRIVATE_KEY }}
       - uses: actions/checkout@v4
         with:
           repository: 'WebFrame/webframe.github.io'
           ref: main
-          submodules: 'recursive'
-          ssh-key: ${{ secrets.CORE_PRIVATE_KEY }}
       - uses: actions/checkout@v4
         with:
           repository: 'WebFrame/Core'
-          ssh-key: ${{ secrets.CORE_PRIVATE_KEY }}
-          ref: ${{ inputs.branch }}
+          token: ${{ inputs.core_GITHUB_TOKEN }}
+          ref: ${{ inputs.core_branch }}
           submodules: 'recursive'
           path: Core
-      - name: Check if Core is retieved
+      - name: Check if Core is retrieved
         shell: bash
         run: |
           ls
@@ -49,8 +48,6 @@ jobs:
           rm -rf Core
       - name: Commit files
         run: |
-          eval `ssh-agent -s`
-          ssh-add ${{ secrets.CORE_PRIVATE_KEY }}
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add .
@@ -63,22 +60,19 @@ jobs:
     name: Get JSON ORM test results
     runs-on: ubuntu-latest
     steps:
-      - uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.CORE_PRIVATE_KEY }}
       - uses: actions/checkout@v4
         with:
-          ssh-key: ${{ secrets.CORE_PRIVATE_KEY }}
+          # ssh-key: ${{ secrets.CORE_PRIVATE_KEY }}
           submodules: 'recursive'
           ref: main
       - uses: actions/checkout@v4
         with:
           repository: 'WebFrame/ORM-Abstract'
-          ref: ${{ inputs.orm_branch }}'
-          token: '${{ github.token }}' 
+          ref: '${{ inputs.orm_branch }}'
+          token: ${{ inputs.orm_GITHUB_TOKEN }}
           submodules: 'recursive'
           path: ORM-Abstract
-      - name: Check if ORM is retieved
+      - name: Check if ORM is retrieved
         shell: bash
         run: |
           ls
@@ -92,8 +86,3 @@ jobs:
           git add .
           git commit -m "Add collected data from ORM" -a
           git push
-      - name: Push the data
-        uses: ad-m/github-push-action@master
-        with:
-          ssh: true
-          branch: ${{ github.ref }}
