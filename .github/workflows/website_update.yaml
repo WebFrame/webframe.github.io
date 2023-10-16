@@ -1,23 +1,12 @@
 name: Code quality report deploy
 on:
-  workflow_call:
-    inputs:
-      core_branch:
-        description: 'Branch ref'
-        required: false
-        default: 'main'
-        type: string
-      orm_branch:
-        description: 'Branch ref'
-        required: false
-        default: 'main'
-        type: string
+  repository_dispatch:
+    types: [doc_update]
 
 permissions: write-all
 
 jobs:
   get-core-data:
-    if: github.event.commits[0].author.name != 'github-actions[bot]'
     name: Get JSON benchmark test results
     runs-on: ubuntu-latest
     steps:
@@ -30,7 +19,7 @@ jobs:
         with:
           repository: 'WebFrame/Core'
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          ref: ${{ inputs.core_branch }}
+          ref: gh-pages
           submodules: 'recursive'
           path: Core
       - name: Check if Core is retrieved
@@ -38,8 +27,7 @@ jobs:
         run: |
           ls
           ls Core/
-          cp Core/reports . -rf
-          rm -rf Core
+          rm -rf Core/.git*
       - name: Commit files
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -49,24 +37,22 @@ jobs:
       - name: Push the data
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          branch: ${{ github.ref }}
+          github_token: ${{ github.token }}
 
   get-orm-data:
-    if: github.event.commits[0].author.name != 'github-actions[bot]'
     needs: [get-core-data]
     name: Get JSON ORM test results
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          token:  ${{ github.token }}
           submodules: 'recursive'
           ref: main
       - uses: actions/checkout@v4
         with:
           repository: 'WebFrame/ORM-Abstract'
-          ref: '${{ inputs.orm_branch }}'
+          ref: gh-pages
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           submodules: 'recursive'
           path: ORM-Abstract
@@ -86,5 +72,4 @@ jobs:
       - name: Push the data
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          branch: ${{ github.ref }}
+          github_token: ${{ github.token }}
